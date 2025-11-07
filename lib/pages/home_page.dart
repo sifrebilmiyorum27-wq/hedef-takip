@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-import '../data/konular.dart';
+import '../data/tyt_turkce.dart';
+import '../data/tyt_matematik.dart';
+import '../data/tyt_fizik.dart';
+import '../data/tyt_kimya.dart';
+import '../data/tyt_geometri.dart';
+import '../data/tyt_biyoloji.dart';
 import '../data/ayt_matematik.dart';
+import '../data/konular.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,7 +16,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String seciliSeviye = "TYT"; // Seçili seviye (TYT - AYT)
+  // Ders seçme alanı için liste
+  final Map<String, List<Map<String, dynamic>>> dersler = {
+    "TYT Türkçe": tyt_turkce,
+    "TYT Matematik": tyt_matematik,
+    "TYT Geometri": tyt_geometri,
+    "TYT Fizik": tyt_fizik,
+    "TYT Kimya": tyt_kimya,
+    "TYT Biyoloji": tyt_biyoloji,
+    "AYT Matematik": ayt_matematik,
+  };
+
+  String secilenDers = "TYT Türkçe";
 
   @override
   void initState() {
@@ -22,54 +39,49 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Aktif konu listesini seçiyoruz
-    final aktifListe = seciliSeviye == "TYT" ? konular : aytMatematik;
-
-    int tamamlananSayisi =
-        aktifListe.where((k) => k["tamamlandi"] == true).length;
-    double ilerleme =
-        aktifListe.isEmpty ? 0 : tamamlananSayisi / aktifListe.length;
+    List<Map<String, dynamic>> aktifListe = dersler[secilenDers]!;
+    int tamamlananSayisi = aktifListe.where((k) => k["tamamlandi"] == true).length;
+    double ilerleme = tamamlananSayisi / aktifListe.length;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Konu Takip"),
+        title: const Text("Hedef Takip"),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          const SizedBox(height: 12),
-
-          // ✅ TYT / AYT seçim kutusu
-          DropdownButton<String>(
-            value: seciliSeviye,
-            items: const [
-              DropdownMenuItem(value: "TYT", child: Text("TYT Konuları")),
-              DropdownMenuItem(value: "AYT", child: Text("AYT Konuları")),
-            ],
-            onChanged: (value) {
-              setState(() {
-                seciliSeviye = value!;
-              });
-            },
-          ),
-
           const SizedBox(height: 16),
 
-          // ✅ İlerleme çubuğu
+          // ⭐ Açılır Menü (Dropdown)
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: LinearProgressIndicator(
-              value: ilerleme,
-              minHeight: 10,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: DropdownButtonFormField(
+              value: secilenDers,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: dersler.keys.map((ders) {
+                return DropdownMenuItem(value: ders, child: Text(ders));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  secilenDers = value!;
+                });
+              },
             ),
           ),
-          Text(
-            "% ${(ilerleme * 100).toStringAsFixed(0)} tamamlandı",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+
           const SizedBox(height: 16),
 
-          // ✅ Konu listesi
+          // İlerleme barı
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LinearProgressIndicator(value: ilerleme, minHeight: 8),
+          ),
+          Text("% ${(ilerleme * 100).toStringAsFixed(0)} tamamlandı",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
+          const SizedBox(height: 16),
+
+          // Konu Listesi
           Expanded(
             child: ListView.builder(
               itemCount: aktifListe.length,
@@ -80,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (deger) {
                     setState(() {
                       aktifListe[index]["tamamlandi"] = deger;
-                      kaydetKonular(); // ✅ Kaydediyoruz
+                      kaydetKonular();
                     });
                   },
                 );
