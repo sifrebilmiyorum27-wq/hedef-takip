@@ -9,6 +9,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    yukleKonular().then((_) {
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     int tamamlananSayisi = konular.where((k) => k["tamamlandi"] == true).length;
@@ -46,6 +55,7 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (deger) {
                     setState(() {
                       konular[index]["tamamlandi"] = deger;
+                      kaydetKonular(); // ✅ KAYDEDİYORUZ
                     });
                   },
                 );
