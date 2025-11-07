@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/konular.dart';
+import '../data/ayt_matematik.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,6 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String seciliSeviye = "TYT"; // Seçili seviye (TYT - AYT)
 
   @override
   void initState() {
@@ -20,8 +22,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    int tamamlananSayisi = konular.where((k) => k["tamamlandi"] == true).length;
-    double ilerleme = tamamlananSayisi / konular.length;
+    // Aktif konu listesini seçiyoruz
+    final aktifListe = seciliSeviye == "TYT" ? konular : aytMatematik;
+
+    int tamamlananSayisi =
+        aktifListe.where((k) => k["tamamlandi"] == true).length;
+    double ilerleme =
+        aktifListe.isEmpty ? 0 : tamamlananSayisi / aktifListe.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -30,7 +37,25 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // İlerleme gösterge barı
+          const SizedBox(height: 12),
+
+          // ✅ TYT / AYT seçim kutusu
+          DropdownButton<String>(
+            value: seciliSeviye,
+            items: const [
+              DropdownMenuItem(value: "TYT", child: Text("TYT Konuları")),
+              DropdownMenuItem(value: "AYT", child: Text("AYT Konuları")),
+            ],
+            onChanged: (value) {
+              setState(() {
+                seciliSeviye = value!;
+              });
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // ✅ İlerleme çubuğu
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: LinearProgressIndicator(
@@ -44,18 +69,18 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
 
-          // Konu Listesi
+          // ✅ Konu listesi
           Expanded(
             child: ListView.builder(
-              itemCount: konular.length,
+              itemCount: aktifListe.length,
               itemBuilder: (context, index) {
                 return CheckboxListTile(
-                  title: Text(konular[index]["ad"]),
-                  value: konular[index]["tamamlandi"],
+                  title: Text(aktifListe[index]["ad"]),
+                  value: aktifListe[index]["tamamlandi"],
                   onChanged: (deger) {
                     setState(() {
-                      konular[index]["tamamlandi"] = deger;
-                      kaydetKonular(); // ✅ KAYDEDİYORUZ
+                      aktifListe[index]["tamamlandi"] = deger;
+                      kaydetKonular(); // ✅ Kaydediyoruz
                     });
                   },
                 );
